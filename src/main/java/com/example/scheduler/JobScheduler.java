@@ -1,4 +1,4 @@
-package com.example;
+package com.example.scheduler;
 
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
@@ -14,14 +14,24 @@ public class JobScheduler {
     public JobScheduler() {
         var schedulerFactory = new StdSchedulerFactory();
         try {
-            LOG.info("Starting scheduler");
+            LOG.info("Creating scheduler");
             this.scheduler = schedulerFactory.getScheduler();
+        } catch (SchedulerException e) {
+            LOG.error(String.format("Failed to create scheduler due to: %s", e.getMessage()), e);
+        }
+    }
+
+    public void run() {
+        scheduleJob(SendMessageJob.class, "*/10 * * ? * *");
+        try {
+            LOG.info("Creating scheduler");
+            this.scheduler.start();
         } catch (SchedulerException e) {
             LOG.error(String.format("Failed to start scheduler due to: %s", e.getMessage()), e);
         }
     }
 
-    public JobScheduler scheduleJob(Class<? extends Job> job, String cronExpression) {
+    private JobScheduler scheduleJob(Class<? extends Job> job, String cronExpression) {
         try {
             LOG.info(String.format("Scheduling job for class %s and expression %s", job.getSimpleName(), cronExpression));
             this.scheduler.scheduleJob(buildJobDetail(job), createTrigger(cronExpression));
@@ -29,13 +39,6 @@ public class JobScheduler {
             LOG.error(String.format("Failed to schedule job due to: %s", e.getMessage()), e);
         }
         return this;
-    }
-
-    public void start() {
-        try {
-            this.scheduler.start();
-        } catch (SchedulerException e) {
-            LOG.error(String.format("Failed to start scheduler due to: %s", e.getMessage()), e); }
     }
 
     private JobDetail buildJobDetail(Class<? extends Job> job) {

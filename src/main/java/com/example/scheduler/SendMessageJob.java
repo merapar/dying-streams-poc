@@ -1,5 +1,6 @@
-package com.example;
+package com.example.scheduler;
 
+import com.example.kafka.KafkaSettings;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -13,9 +14,8 @@ import org.slf4j.LoggerFactory;
 import java.util.Properties;
 import java.util.UUID;
 
-import static com.example.KafkaStreamsRunner.KAFKA_CLIENT_ID;
-import static com.example.KafkaStreamsRunner.KAFKA_SERVER;
-import static com.example.KafkaStreamsRunner.SCHEDULE_TOPIC;
+import static com.example.kafka.KafkaSettings.KAFKA_CLIENT_ID;
+import static com.example.kafka.KafkaSettings.SCHEDULE_TOPIC;
 
 public class SendMessageJob implements Job {
 
@@ -30,7 +30,7 @@ public class SendMessageJob implements Job {
 
     private KafkaProducer<String, Long> createMessageProducer() {
         Properties properties = new Properties();
-        properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_SERVER);
+        properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KafkaSettings.getKafkaServer());
         properties.put(ProducerConfig.CLIENT_ID_CONFIG + UUID.randomUUID().toString(), KAFKA_CLIENT_ID);
         return new KafkaProducer<>(properties, new StringSerializer(), new LongSerializer());
     }

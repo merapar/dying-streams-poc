@@ -1,4 +1,4 @@
-package com.example;
+package com.example.kafka;
 
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -14,12 +14,9 @@ import org.apache.kafka.streams.kstream.Produced;
 import java.util.List;
 import java.util.Properties;
 
-public class KafkaStreamsRunner {
+import static com.example.kafka.KafkaSettings.*;
 
-    static final String SCHEDULE_TOPIC = "schedule_topic";
-    static final String KAFKA_SERVER = "localhost:9092";
-    static final String KAFKA_CLIENT_ID = "client_id";
-    private static final String TRANSFORMING_TOPIC = "transforming_topic";
+public class KafkaStreamsRunner {
 
     public void run() {
         createTopics();
@@ -44,7 +41,7 @@ public class KafkaStreamsRunner {
 
     private static Properties loadProperrties() {
         final Properties properties = new Properties();
-        properties.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_SERVER);
+        properties.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, KafkaSettings.getKafkaServer());
         properties.put(StreamsConfig.APPLICATION_ID_CONFIG, KAFKA_CLIENT_ID);
         properties.put(StreamsConfig.PROCESSING_GUARANTEE_CONFIG, StreamsConfig.EXACTLY_ONCE);
         properties.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.StringSerde.class);
