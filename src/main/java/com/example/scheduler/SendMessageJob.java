@@ -31,7 +31,7 @@ public class SendMessageJob implements Job {
     private KafkaProducer<String, Long> createMessageProducer() {
         Properties properties = new Properties();
         properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KafkaSettings.getKafkaServer());
-        properties.put(ProducerConfig.CLIENT_ID_CONFIG + UUID.randomUUID().toString(), KAFKA_CLIENT_ID);
+        properties.put(ProducerConfig.CLIENT_ID_CONFIG, KAFKA_CLIENT_ID + UUID.randomUUID().toString());
         return new KafkaProducer<>(properties, new StringSerializer(), new LongSerializer());
     }
 }
