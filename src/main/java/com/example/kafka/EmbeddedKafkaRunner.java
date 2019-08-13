@@ -11,7 +11,7 @@ public class EmbeddedKafkaRunner {
     private static final SharedKafkaTestResource SHARED_KAFKA_TEST_RESOURCE = new SharedKafkaTestResource().withBrokers(1);
 
     public static void runIfNeeded() {
-        if(System.getenv("EMBEDDED_KAFKA")!= null) {
+        if (System.getenv("EMBEDDED_KAFKA") != null) {
             try {
                 SHARED_KAFKA_TEST_RESOURCE.beforeAll(null);
                 Runtime.getRuntime().addShutdownHook(new Thread(() -> SHARED_KAFKA_TEST_RESOURCE.afterAll(null)));
@@ -21,7 +21,5 @@ public class EmbeddedKafkaRunner {
             }
         }
     }
-
-
 
 }

@@ -18,13 +18,16 @@ import static com.example.kafka.KafkaSettings.*;
 
 public class KafkaStreamsRunner {
 
+    private MonitoredKafkaStreams monitoredKafkaStreams;
+
     public void run() {
         createTopics();
-        createStreams().start();
+        monitoredKafkaStreams = createStreams();
+        monitoredKafkaStreams.start();
     }
 
     private void createTopics() {
-        try (var adminClient = AdminClient.create(loadProperrties())) {
+        try (var adminClient = AdminClient.create(loadProperties())) {
             adminClient.createTopics(prepareNewTopics());
         }
     }
@@ -33,13 +36,19 @@ public class KafkaStreamsRunner {
         return List.of(new NewTopic(SCHEDULE_TOPIC, 1, (short)1), new NewTopic(TRANSFORMING_TOPIC, 1, (short)1));
     }
 
-    private KafkaStreams createStreams() {
-        var builder = new StreamsBuilder();
-        builder.stream(SCHEDULE_TOPIC, Consumed.with(new Serdes.StringSerde(), new Serdes.LongSerde())).transform(SleepingTransformer::new).to(TRANSFORMING_TOPIC, Produced.with(new Serdes.StringSerde(), new Serdes.LongSerde()));
-        return new KafkaStreams(builder.build(),loadProperrties());
+    public MonitoredKafkaStreams getMonitoredKafkaStreams() {
+        return monitoredKafkaStreams;
     }
 
-    private static Properties loadProperrties() {
+    private MonitoredKafkaStreams createStreams() {
+        var builder = new StreamsBuilder();
+        builder.stream(SCHEDULE_TOPIC, Consumed.with(new Serdes.StringSerde(), new Serdes.LongSerde()))
+               .transform(SleepingTransformer::new)
+               .to(TRANSFORMING_TOPIC, Produced.with(new Serdes.StringSerde(), new Serdes.LongSerde()));
+        return new MonitoredKafkaStreams(builder.build(), loadProperties());
+    }
+
+    private static Properties loadProperties() {
         final Properties properties = new Properties();
         properties.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, KafkaSettings.getKafkaServer());
         properties.put(StreamsConfig.APPLICATION_ID_CONFIG, KAFKA_CLIENT_ID);
@@ -49,6 +58,7 @@ public class KafkaStreamsRunner {
         properties.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG, 20);
         properties.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 1);
         properties.put(StreamsConfig.DEFAULT_DESERIALIZATION_EXCEPTION_HANDLER_CLASS_CONFIG, LogAndContinueExceptionHandler.class);
+        properties.put(StreamsConfig.DEFAULT_PRODUCTION_EXCEPTION_HANDLER_CLASS_CONFIG, LogAndContinueProductionExceptionHandler.class);
         return properties;
     }
 }
