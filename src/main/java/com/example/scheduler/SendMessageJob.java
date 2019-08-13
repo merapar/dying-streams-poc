@@ -23,22 +23,16 @@ public class SendMessageJob implements Job {
 
     private static final Logger LOG = LoggerFactory.getLogger(SendMessageJob.class);
 
-    private static Properties properties;
-    private static Supplier<KafkaProducer<String, Long>> producerSupplier = Suppliers.memoize(SendMessageJob::createMessageProducer)::get;
-
-    static {
-        properties = new Properties();
-        properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KafkaSettings.getKafkaServer());
-        properties.put(ProducerConfig.CLIENT_ID_CONFIG, KAFKA_CLIENT_ID + UUID.randomUUID());
-    }
-
     @Override
     public void execute(JobExecutionContext jobExecutionContext) {
         LOG.info("Sending message to schedule topic");
-        producerSupplier.get().send(new ProducerRecord<>(SCHEDULE_TOPIC, UUID.randomUUID().toString(), System.currentTimeMillis()));
+        createMessageProducer().send(new ProducerRecord<>(SCHEDULE_TOPIC, UUID.randomUUID().toString(), System.currentTimeMillis()));
     }
 
-    private static KafkaProducer<String, Long> createMessageProducer() {
+    private KafkaProducer<String, Long> createMessageProducer() {
+        Properties properties = new Properties();
+        properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KafkaSettings.getKafkaServer());
+        properties.put(ProducerConfig.CLIENT_ID_CONFIG, KAFKA_CLIENT_ID + UUID.randomUUID().toString());
         return new KafkaProducer<>(properties, new StringSerializer(), new LongSerializer());
     }
 }
